@@ -1,0 +1,69 @@
+{% extends "base.html" %}
+{% block title %}Documentos · Sistema Escolar{% endblock %}
+{% block topbar_title %}Documentos{% endblock %}
+{% block content %}
+<div class="mb-7">
+  <h1 class="text-2xl font-semibold text-ink-900 tracking-tight">Documentos</h1>
+  <p class="text-sm text-ink-500 mt-1">Todos os arquivos armazenados no Google Drive do cliente, organizados por aluno.</p>
+</div>
+
+<div class="card overflow-hidden">
+  {% if documents %}
+  <div class="overflow-x-auto">
+  <table class="w-full text-sm">
+    <thead class="border-b border-ink-200">
+      <tr>
+        <th class="th">Arquivo</th>
+        <th class="th">Aluno</th>
+        <th class="th">Categoria</th>
+        <th class="th">Data</th>
+        <th class="th text-right">Ações</th>
+      </tr>
+    </thead>
+    <tbody class="divide-y divide-ink-100">
+      {% for document in documents %}
+      <tr class="tr-hover">
+        <td class="td">
+          <div class="flex items-center gap-3">
+            <span class="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-ink-100 text-ink-500">
+              <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.75"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6M9 8h1M6 3h9l5 5v13a1 1 0 01-1 1H6a1 1 0 01-1-1V4a1 1 0 011-1z"/></svg>
+            </span>
+            <span class="font-medium text-ink-900">{{ document.name }}</span>
+          </div>
+        </td>
+        <td class="td">
+          <a href="{% url 'students:detail' document.student.pk %}" class="link-action">{{ document.student.full_name }}</a>
+        </td>
+        <td class="td">
+          {% if document.category == "documentos" %}<span class="badge-info">{{ document.get_category_display }}</span>
+          {% elif document.category == "fotos" %}<span class="badge bg-violet-50 text-violet-700 ring-1 ring-inset ring-violet-600/20">{{ document.get_category_display }}</span>
+          {% else %}<span class="badge-neutral">{{ document.get_category_display }}</span>{% endif %}
+        </td>
+        <td class="td text-ink-500 tabular-nums">{{ document.created_at|date:"d/m/Y" }}</td>
+        <td class="td text-right whitespace-nowrap">
+          <a href="{{ document.google_drive_url }}" target="_blank" rel="noopener" class="link-action">Abrir</a>
+          <span class="text-ink-300 mx-1.5">·</span>
+          <a href="{% url 'documents:download' document.pk %}" class="link-action">Baixar</a>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  </div>
+  {% if is_paginated %}
+  <div class="px-5 py-3.5 border-t border-ink-200 flex items-center justify-between text-sm">
+    {% if page_obj.has_previous %}<a href="?page={{ page_obj.previous_page_number }}" class="link-action">← Anterior</a>{% else %}<span></span>{% endif %}
+    <span class="text-ink-500">Página {{ page_obj.number }} de {{ page_obj.paginator.num_pages }}</span>
+    {% if page_obj.has_next %}<a href="?page={{ page_obj.next_page_number }}" class="link-action">Próxima →</a>{% else %}<span></span>{% endif %}
+  </div>
+  {% endif %}
+  {% else %}
+  <div class="px-5 py-16 text-center">
+    <svg class="mx-auto h-12 w-12 text-ink-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6M9 8h1M6 3h9l5 5v13a1 1 0 01-1 1H6a1 1 0 01-1-1V4a1 1 0 011-1z"/></svg>
+    <p class="text-sm font-medium text-ink-900 mt-4">Nenhum documento enviado ainda</p>
+    <p class="text-sm text-ink-500 mt-1">Acesse a ficha de um aluno para enviar o primeiro arquivo.</p>
+    <a href="{% url 'students:list' %}" class="btn-primary mt-5">Ver alunos</a>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

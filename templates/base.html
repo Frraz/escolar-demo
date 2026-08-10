@@ -1,0 +1,114 @@
+{% load django_htmx %}<!doctype html>
+<html lang="pt-br">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}Sistema Escolar{% endblock %}</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'ui-sans-serif', 'system-ui', 'sans-serif'],
+          },
+          colors: {
+            brand: {
+              50: '#eff6ff', 100: '#dbeafe', 200: '#bfdbfe', 300: '#93c5fd',
+              400: '#60a5fa', 500: '#3b82f6', 600: '#2563eb', 700: '#1d4ed8',
+              800: '#1e40af', 900: '#1e3a8a', 950: '#172554',
+            },
+            ink: {
+              50: '#f8fafc', 100: '#f1f5f9', 200: '#e2e8f0', 300: '#cbd5e1',
+              400: '#94a3b8', 500: '#64748b', 600: '#475569', 700: '#334155',
+              800: '#1e293b', 900: '#0f172a', 950: '#020617',
+            },
+          },
+          boxShadow: {
+            card: '0 1px 2px 0 rgb(15 23 42 / 0.04), 0 1px 3px 0 rgb(15 23 42 / 0.06)',
+            'card-hover': '0 4px 12px -2px rgb(15 23 42 / 0.08), 0 2px 6px -2px rgb(15 23 42 / 0.05)',
+            popover: '0 12px 24px -6px rgb(15 23 42 / 0.12), 0 4px 8px -4px rgb(15 23 42 / 0.08)',
+          },
+        },
+      },
+    }
+  </script>
+
+  <style type="text/tailwindcss">
+    @layer base {
+      html { -webkit-font-smoothing: antialiased; }
+      body { @apply bg-ink-50 text-ink-800; }
+      ::selection { @apply bg-brand-200 text-ink-900; }
+      *:focus-visible { @apply outline-none ring-2 ring-brand-500 ring-offset-2 ring-offset-white; }
+    }
+    @layer components {
+      /* Botões */
+      .btn { @apply inline-flex items-center justify-center gap-2 rounded-lg text-sm font-medium px-4 py-2.5 min-h-[40px] transition-all duration-150 disabled:opacity-50 disabled:pointer-events-none cursor-pointer whitespace-nowrap; }
+      .btn-primary { @apply btn bg-brand-600 text-white shadow-sm hover:bg-brand-700 active:bg-brand-800; }
+      .btn-secondary { @apply btn bg-white text-ink-700 border border-ink-300 shadow-sm hover:bg-ink-50 hover:border-ink-400 active:bg-ink-100; }
+      .btn-ghost { @apply btn text-ink-600 hover:bg-ink-100 hover:text-ink-900; }
+      .btn-danger { @apply btn bg-white text-red-600 border border-ink-300 shadow-sm hover:bg-red-50 hover:border-red-300 hover:text-red-700; }
+      .btn-sm { @apply px-3 py-1.5 min-h-[32px] text-xs; }
+
+      /* Cartões */
+      .card { @apply bg-white border border-ink-200 rounded-xl shadow-card; }
+      .card-header { @apply px-5 py-4 border-b border-ink-200; }
+      .card-title { @apply font-semibold text-ink-900; }
+
+      /* Formulários */
+      .field-label { @apply block text-sm font-medium text-ink-700 mb-1.5; }
+      .field-input { @apply w-full rounded-lg border border-ink-300 bg-white px-3.5 py-2.5 text-sm text-ink-900 placeholder:text-ink-400 shadow-sm transition-colors duration-150 focus:outline-none focus:border-brand-500 focus:ring-4 focus:ring-brand-500/10; }
+      .field-error { @apply mt-1.5 text-xs font-medium text-red-600; }
+      .field-help { @apply mt-1.5 text-xs text-ink-500; }
+
+      /* Tabelas */
+      .th { @apply px-5 py-3 text-left text-xs font-semibold uppercase tracking-wide text-ink-500; }
+      .td { @apply px-5 py-3.5 text-sm text-ink-700; }
+      .tr-hover { @apply transition-colors duration-100 hover:bg-ink-50/80; }
+
+      /* Badges */
+      .badge { @apply inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-medium; }
+      .badge-success { @apply badge bg-emerald-50 text-emerald-700 ring-1 ring-inset ring-emerald-600/20; }
+      .badge-neutral { @apply badge bg-ink-100 text-ink-600 ring-1 ring-inset ring-ink-500/10; }
+      .badge-warning { @apply badge bg-amber-50 text-amber-700 ring-1 ring-inset ring-amber-600/20; }
+      .badge-danger { @apply badge bg-red-50 text-red-700 ring-1 ring-inset ring-red-600/20; }
+      .badge-info { @apply badge bg-blue-50 text-blue-700 ring-1 ring-inset ring-blue-600/20; }
+
+      /* Links de ação em tabelas */
+      .link-action { @apply text-ink-500 hover:text-brand-600 font-medium transition-colors duration-100 cursor-pointer; }
+      .link-danger { @apply text-ink-500 hover:text-red-600 font-medium transition-colors duration-100 cursor-pointer; }
+    }
+    .htmx-indicator { opacity: 0; transition: opacity 150ms ease-in; }
+    .htmx-request.htmx-indicator, .htmx-request .htmx-indicator { opacity: 1; }
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { animation-duration: 0.001ms !important; transition-duration: 0.001ms !important; }
+    }
+  </style>
+
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect width=%22100%22 height=%22100%22 rx=%2222%22 fill=%22%231d4ed8%22/><text x=%2250%22 y=%2266%22 font-size=%2246%22 font-weight=%22700%22 fill=%22white%22 text-anchor=%22middle%22 font-family=%22Arial%22>SE</text></svg>">
+
+  <script src="https://unpkg.com/htmx.org@2.0.3" integrity="sha384-0895/pl2MU10Hqc6jd4RvrthNlDiE9U1tWmX7WRESftEDRosgxNsQG/Ze9YMRzHq" crossorigin="anonymous"></script>
+  <meta name="htmx-config" content='{"defaultSwapStyle": "outerHTML"}'>
+</head>
+<body class="min-h-screen font-sans antialiased" hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'>
+  {% if user.is_authenticated %}
+  <div class="flex min-h-screen">
+    {% include "partials/_sidebar.html" %}
+    <div class="flex-1 flex flex-col min-w-0">
+      {% include "partials/_topbar.html" %}
+      <main class="flex-1 px-6 py-7 max-w-7xl w-full mx-auto">
+        {% include "partials/_messages.html" %}
+        {% block content %}{% endblock %}
+      </main>
+    </div>
+  </div>
+  {% else %}
+    {% block auth_content %}{% endblock %}
+  {% endif %}
+</body>
+</html>

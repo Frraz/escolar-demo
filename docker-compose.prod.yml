@@ -1,0 +1,44 @@
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: escolar_db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-escolar}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-escolar}
+      POSTGRES_DB: ${POSTGRES_DB:-escolar_demo}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-escolar}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  web:
+    build:
+      context: .
+    container_name: escolar_web
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      DJANGO_SETTINGS_MODULE: config.settings.production
+    volumes:
+      - ./staticfiles:/app/staticfiles
+    ports:
+      - "127.0.0.1:8011:8000"
+    depends_on:
+      db:
+        condition: service_healthy
+    healthcheck:
+      # X-Forwarded-Proto:https evita o redirect HTTP->HTTPS do SECURE_SSL_REDIRECT
+      # (o healthcheck fala direto com o gunicorn, sem passar pelo nginx do host).
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen(urllib.request.Request('http://localhost:8000/contas/login/', headers={'X-Forwarded-Proto': 'https'}))"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 20s
+
+volumes:
+  postgres_data:

@@ -1,0 +1,89 @@
+{% extends "base.html" %}
+{% block title %}Alunos · Sistema Escolar{% endblock %}
+{% block topbar_title %}Alunos{% endblock %}
+{% block content %}
+<div class="flex items-center justify-between mb-7">
+  <div>
+    <h1 class="text-2xl font-semibold text-ink-900 tracking-tight">Alunos</h1>
+    <p class="text-sm text-ink-500 mt-1">Gerencie o cadastro de alunos da escola.</p>
+  </div>
+  <a href="{% url 'students:create' %}" class="btn-primary">
+    <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"/></svg>
+    Novo aluno
+  </a>
+</div>
+
+<form method="get" class="mb-5">
+  <div class="relative max-w-sm">
+    <svg class="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-ink-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-4.35-4.35M18 10.5a7.5 7.5 0 11-15 0 7.5 7.5 0 0115 0z"/></svg>
+    <input type="text" name="q" value="{{ search }}" placeholder="Buscar aluno pelo nome..."
+      class="field-input pl-10">
+  </div>
+</form>
+
+<div class="card overflow-hidden">
+  {% if students %}
+  <div class="overflow-x-auto">
+  <table class="w-full text-sm">
+    <thead class="border-b border-ink-200">
+      <tr>
+        <th class="th">Aluno</th>
+        <th class="th">Matrícula</th>
+        <th class="th">Turma</th>
+        <th class="th">Status</th>
+        <th class="th text-right">Ações</th>
+      </tr>
+    </thead>
+    <tbody class="divide-y divide-ink-100">
+      {% for student in students %}
+      <tr class="tr-hover">
+        <td class="td">
+          <a href="{% url 'students:detail' student.pk %}" class="flex items-center gap-3 group">
+            <span class="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-brand-50 text-brand-700 text-xs font-semibold">
+              {{ student.full_name|slice:":2"|upper }}
+            </span>
+            <span class="font-medium text-ink-900 group-hover:text-brand-600">{{ student.full_name }}</span>
+          </a>
+        </td>
+        <td class="td text-ink-500 tabular-nums">{{ student.registration_number }}</td>
+        <td class="td text-ink-600">{{ student.school_class|default:"—" }}</td>
+        <td class="td">
+          {% if student.is_active %}
+          <span class="badge-success">Ativo</span>
+          {% else %}
+          <span class="badge-neutral">Inativo</span>
+          {% endif %}
+        </td>
+        <td class="td text-right whitespace-nowrap">
+          <a href="{% url 'students:update' student.pk %}" class="link-action">Editar</a>
+          <span class="text-ink-300 mx-1.5">·</span>
+          <a href="{% url 'students:delete' student.pk %}" class="link-danger">Excluir</a>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  </div>
+  {% if is_paginated %}
+  <div class="px-5 py-3.5 border-t border-ink-200 flex items-center justify-between text-sm">
+    {% if page_obj.has_previous %}<a href="?page={{ page_obj.previous_page_number }}" class="link-action">← Anterior</a>{% else %}<span></span>{% endif %}
+    <span class="text-ink-500">Página {{ page_obj.number }} de {{ page_obj.paginator.num_pages }}</span>
+    {% if page_obj.has_next %}<a href="?page={{ page_obj.next_page_number }}" class="link-action">Próxima →</a>{% else %}<span></span>{% endif %}
+  </div>
+  {% endif %}
+  {% else %}
+  <div class="px-5 py-16 text-center">
+    <svg class="mx-auto h-12 w-12 text-ink-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5a4 4 0 100 8 4 4 0 000-8zM3 20a7 7 0 0114 0"/></svg>
+    <p class="text-sm font-medium text-ink-900 mt-4">
+      {% if search %}Nenhum aluno encontrado para "{{ search }}"{% else %}Nenhum aluno cadastrado ainda{% endif %}
+    </p>
+    <p class="text-sm text-ink-500 mt-1">
+      {% if search %}Tente outro termo de busca.{% else %}Comece cadastrando o primeiro aluno da escola.{% endif %}
+    </p>
+    {% if not search %}
+    <a href="{% url 'students:create' %}" class="btn-primary mt-5">Cadastrar aluno</a>
+    {% endif %}
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

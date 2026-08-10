@@ -1,0 +1,24 @@
+<div class="card p-5">
+  <div class="flex items-center gap-2 mb-3.5">
+    <svg class="h-4 w-4 text-emerald-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75l2.25 2.25 4.5-4.5m4.5 2.25a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+    <h2 class="card-title">Armazenamento</h2>
+  </div>
+  {% if folder %}
+  <p class="text-xs font-medium text-ink-500 mb-2">Localização no Drive</p>
+  <div class="text-xs bg-ink-50 border border-ink-200 rounded-lg p-3 text-ink-600 font-mono leading-relaxed mb-3.5">
+    <p>Google Drive</p>
+    <p class="pl-3 text-ink-400">└ Sistema Escolar</p>
+    <p class="pl-6 text-ink-400">└ Alunos</p>
+    <p class="pl-9 text-ink-900 font-medium">└ {{ student.drive_folder_name }}</p>
+  </div>
+  <a href="{{ folder.drive_url }}" target="_blank" rel="noopener" class="btn-secondary btn-sm w-full">
+    <svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M13.5 6H5.25A2.25 2.25 0 003 8.25v10.5A2.25 2.25 0 005.25 21h10.5A2.25 2.25 0 0018 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25"/></svg>
+    Abrir pasta no Google Drive
+  </a>
+  {% else %}
+  <div class="flex items-start gap-2.5">
+    <svg class="h-5 w-5 shrink-0 text-amber-500 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z"/></svg>
+    <p class="text-sm text-ink-500">A pasta ainda não foi criada no Google Drive. Verifique a conexão em <a href="{% url 'google_drive:status' %}" class="text-brand-600 hover:underline font-medium">Configurações</a>.</p>
+  </div>
+  {% endif %}
+</div>

@@ -1,0 +1,114 @@
+{% extends "base.html" %}
+{% block title %}{{ school_class.name }} · Sistema Escolar{% endblock %}
+{% block topbar_title %}Turmas{% endblock %}
+{% block content %}
+<div class="flex items-start justify-between mb-7 gap-4">
+  <div class="flex items-start gap-4 min-w-0">
+    <span class="inline-flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-violet-50 text-violet-700 ring-1 ring-inset ring-violet-600/10">
+      <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.75"><path stroke-linecap="round" stroke-linejoin="round" d="M4 19.5A2.5 2.5 0 016.5 17H20M4 19.5A2.5 2.5 0 006.5 22H20V4H6.5A2.5 2.5 0 004 6.5v13z"/></svg>
+    </span>
+    <div class="min-w-0">
+      <p class="text-sm text-ink-500"><a href="{% url 'classes:list' %}" class="hover:text-brand-600">Turmas</a> <span class="mx-1">/</span> {{ school_class.name }}</p>
+      <h1 class="text-2xl font-semibold text-ink-900 tracking-tight mt-0.5">{{ school_class.name }}</h1>
+      <div class="flex items-center gap-2 mt-1.5">
+        <span class="text-sm text-ink-500 tabular-nums">{{ school_class.school_year }}</span>
+        <span class="text-ink-300">·</span>
+        <span class="text-sm text-ink-500">{{ school_class.get_shift_display }}</span>
+        {% if school_class.is_active %}<span class="badge-success">Ativa</span>{% else %}<span class="badge-neutral">Inativa</span>{% endif %}
+      </div>
+    </div>
+  </div>
+  <div class="flex gap-2 shrink-0">
+    <a href="{% url 'grades:class_grades' school_class.pk %}" class="btn-secondary">
+      <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.75"><path stroke-linecap="round" stroke-linejoin="round" d="M9 17V9m3 8V5m3 12v-4M5 21h14a1 1 0 001-1V4a1 1 0 00-1-1H5a1 1 0 00-1 1v16a1 1 0 001 1z"/></svg>
+      Ver notas
+    </a>
+    <a href="{% url 'classes:update' school_class.pk %}" class="btn-secondary">
+      <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.75"><path stroke-linecap="round" stroke-linejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931z"/></svg>
+      Editar
+    </a>
+  </div>
+</div>
+
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+  <div class="lg:col-span-2 card overflow-hidden">
+    <div class="card-header flex items-center justify-between">
+      <h2 class="card-title">Alunos da turma</h2>
+      <span class="text-xs text-ink-400">{{ students|length }} aluno{{ students|length|pluralize }}</span>
+    </div>
+    {% if students %}
+    <div class="overflow-x-auto">
+    <table class="w-full text-sm">
+      <thead class="border-b border-ink-200">
+        <tr>
+          <th class="th">Nome</th>
+          <th class="th">Matrícula</th>
+          <th class="th">Status</th>
+        </tr>
+      </thead>
+      <tbody class="divide-y divide-ink-100">
+        {% for student in students %}
+        <tr class="tr-hover">
+          <td class="td">
+            <a href="{% url 'students:detail' student.pk %}" class="flex items-center gap-3 group">
+              <span class="inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-brand-50 text-brand-700 text-[11px] font-semibold">{{ student.full_name|slice:":2"|upper }}</span>
+              <span class="font-medium text-ink-900 group-hover:text-brand-600">{{ student.full_name }}</span>
+            </a>
+          </td>
+          <td class="td text-ink-500 tabular-nums">{{ student.registration_number }}</td>
+          <td class="td">{% if student.is_active %}<span class="badge-success">Ativo</span>{% else %}<span class="badge-neutral">Inativo</span>{% endif %}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    </div>
+    {% else %}
+    <div class="px-5 py-14 text-center">
+      <svg class="mx-auto h-10 w-10 text-ink-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5a4 4 0 100 8 4 4 0 000-8zM3 20a7 7 0 0114 0"/></svg>
+      <p class="text-sm font-medium text-ink-900 mt-3">Nenhum aluno vinculado ainda</p>
+      <p class="text-sm text-ink-500 mt-1">Vincule alunos a esta turma na ficha de cadastro de cada aluno.</p>
+    </div>
+    {% endif %}
+  </div>
+
+  <div class="space-y-6">
+    <div class="card p-5">
+      <div class="flex items-center gap-2 mb-3.5">
+        <svg class="h-4 w-4 text-emerald-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75l2.25 2.25 4.5-4.5m4.5 2.25a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+        <h2 class="card-title">Armazenamento</h2>
+      </div>
+      {% if drive_folder %}
+      <p class="text-xs font-medium text-ink-500 mb-2">Localização no Drive</p>
+      <div class="text-xs bg-ink-50 border border-ink-200 rounded-lg p-3 text-ink-600 font-mono leading-relaxed mb-3.5">
+        <p>Google Drive</p>
+        <p class="pl-3 text-ink-400">└ Sistema Escolar</p>
+        <p class="pl-6 text-ink-400">└ Turmas</p>
+        <p class="pl-9 text-ink-900 font-medium">└ {{ school_class.name }}</p>
+      </div>
+      <a href="{{ drive_folder.drive_url }}" target="_blank" rel="noopener" class="btn-secondary btn-sm w-full">
+        <svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M13.5 6H5.25A2.25 2.25 0 003 8.25v10.5A2.25 2.25 0 005.25 21h10.5A2.25 2.25 0 0018 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25"/></svg>
+        Abrir pasta no Google Drive
+      </a>
+      {% else %}
+      <div class="flex items-start gap-2.5">
+        <svg class="h-5 w-5 shrink-0 text-amber-500 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z"/></svg>
+        <p class="text-sm text-ink-500">A pasta ainda não foi criada no Google Drive. Verifique a conexão em <a href="{% url 'google_drive:status' %}" class="text-brand-600 hover:underline font-medium">Configurações</a>.</p>
+      </div>
+      {% endif %}
+    </div>
+
+    <div class="card p-5">
+      <h2 class="card-title mb-3">Planilha de notas</h2>
+      {% if grade_sheet %}
+      <p class="text-sm text-ink-500 mb-3">Sincronizada em <span class="text-ink-900 font-medium">{{ grade_sheet.last_synced_at|date:"d/m/Y H:i"|default:"—" }}</span>.</p>
+      <a href="{{ grade_sheet.google_drive_url }}" target="_blank" rel="noopener" class="btn-secondary btn-sm w-full">
+        <svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 17V9m3 8V5m3 12v-4M5 21h14a1 1 0 001-1V4a1 1 0 00-1-1H5a1 1 0 00-1 1v16a1 1 0 001 1z"/></svg>
+        Abrir no Google Sheets
+      </a>
+      {% else %}
+      <p class="text-sm text-ink-500">As notas ainda não foram sincronizadas com o Google Sheets.</p>
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endblock %}

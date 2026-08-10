@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+{% block title %}Notas · Sistema Escolar{% endblock %}
+{% block topbar_title %}Notas{% endblock %}
+{% block content %}
+<div class="mb-7">
+  <h1 class="text-2xl font-semibold text-ink-900 tracking-tight">Notas</h1>
+  <p class="text-sm text-ink-500 mt-1">Selecione uma turma para lançar ou visualizar as notas.</p>
+</div>
+
+<div class="card overflow-hidden">
+  {% if classes %}
+  <div class="overflow-x-auto">
+  <table class="w-full text-sm">
+    <thead class="border-b border-ink-200">
+      <tr>
+        <th class="th">Turma</th>
+        <th class="th">Ano letivo</th>
+        <th class="th">Alunos</th>
+        <th class="th">Planilha no Drive</th>
+        <th class="th text-right">Ações</th>
+      </tr>
+    </thead>
+    <tbody class="divide-y divide-ink-100">
+      {% for school_class in classes %}
+      <tr class="tr-hover">
+        <td class="td">
+          <a href="{% url 'grades:class_grades' school_class.pk %}" class="flex items-center gap-3 group">
+            <span class="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-violet-50 text-violet-700">
+              <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.75"><path stroke-linecap="round" stroke-linejoin="round" d="M4 19.5A2.5 2.5 0 016.5 17H20M4 19.5A2.5 2.5 0 006.5 22H20V4H6.5A2.5 2.5 0 004 6.5v13z"/></svg>
+            </span>
+            <span class="font-medium text-ink-900 group-hover:text-brand-600">{{ school_class.name }}</span>
+          </a>
+        </td>
+        <td class="td text-ink-600 tabular-nums">{{ school_class.school_year }}</td>
+        <td class="td text-ink-600 tabular-nums">{{ school_class.students.count }}</td>
+        <td class="td">
+          {% if school_class.grade_sheet %}
+          <a href="{{ school_class.grade_sheet.google_drive_url }}" target="_blank" rel="noopener" class="badge-success">
+            <svg class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5"/></svg>
+            Sincronizada
+          </a>
+          {% else %}
+          <span class="badge-neutral">Não sincronizada</span>
+          {% endif %}
+        </td>
+        <td class="td text-right">
+          <a href="{% url 'grades:class_grades' school_class.pk %}" class="link-action">Lançar notas →</a>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  </div>
+  {% else %}
+  <div class="px-5 py-16 text-center">
+    <svg class="mx-auto h-12 w-12 text-ink-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M9 17V9m3 8V5m3 12v-4M5 21h14a1 1 0 001-1V4a1 1 0 00-1-1H5a1 1 0 00-1 1v16a1 1 0 001 1z"/></svg>
+    <p class="text-sm font-medium text-ink-900 mt-4">Nenhuma turma cadastrada ainda</p>
+    <p class="text-sm text-ink-500 mt-1">Cadastre uma turma para começar a lançar notas.</p>
+    <a href="{% url 'classes:create' %}" class="btn-primary mt-5">Cadastrar turma</a>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

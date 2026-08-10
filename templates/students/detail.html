@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+{% block title %}{{ student.full_name }} · Sistema Escolar{% endblock %}
+{% block topbar_title %}Alunos{% endblock %}
+{% block content %}
+<div class="flex items-start justify-between mb-7 gap-4">
+  <div class="flex items-start gap-4 min-w-0">
+    <span class="inline-flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-brand-50 text-brand-700 text-lg font-semibold ring-1 ring-inset ring-brand-600/10">
+      {{ student.full_name|slice:":2"|upper }}
+    </span>
+    <div class="min-w-0">
+      <p class="text-sm text-ink-500"><a href="{% url 'students:list' %}" class="hover:text-brand-600">Alunos</a> <span class="mx-1">/</span> {{ student.full_name }}</p>
+      <h1 class="text-2xl font-semibold text-ink-900 tracking-tight mt-0.5 truncate">{{ student.full_name }}</h1>
+      <div class="flex items-center gap-2 mt-1.5">
+        <span class="text-sm text-ink-500 tabular-nums">Matrícula {{ student.registration_number }}</span>
+        {% if student.school_class %}<span class="text-ink-300">·</span><span class="text-sm text-ink-500">{{ student.school_class }}</span>{% endif %}
+        {% if student.is_active %}<span class="badge-success">Ativo</span>{% else %}<span class="badge-neutral">Inativo</span>{% endif %}
+      </div>
+    </div>
+  </div>
+  <a href="{% url 'students:update' student.pk %}" class="btn-secondary shrink-0">
+    <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.75"><path stroke-linecap="round" stroke-linejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931z"/></svg>
+    Editar aluno
+  </a>
+</div>
+
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+  <div class="lg:col-span-2 space-y-6">
+    {% include "students/_documents_section.html" %}
+  </div>
+
+  <div class="space-y-6">
+    <div class="card p-5">
+      <h2 class="card-title mb-3.5">Dados do aluno</h2>
+      <dl class="space-y-3 text-sm">
+        <div class="flex justify-between gap-4"><dt class="text-ink-500">Nascimento</dt><dd class="text-ink-900 font-medium">{{ student.birth_date|date:"d/m/Y"|default:"—" }}</dd></div>
+        <div class="flex justify-between gap-4"><dt class="text-ink-500">Email</dt><dd class="text-ink-900 font-medium truncate">{{ student.email|default:"—" }}</dd></div>
+        <div class="flex justify-between gap-4"><dt class="text-ink-500">Telefone</dt><dd class="text-ink-900 font-medium">{{ student.phone|default:"—" }}</dd></div>
+        <div class="flex justify-between gap-4"><dt class="text-ink-500">Cadastrado em</dt><dd class="text-ink-900 font-medium">{{ student.created_at|date:"d/m/Y" }}</dd></div>
+      </dl>
+    </div>
+    {% include "partials/_storage_card.html" with folder=drive_folder %}
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,81 @@
+{% extends "base.html" %}
+{% block title %}Configurações · Sistema Escolar{% endblock %}
+{% block topbar_title %}Configurações{% endblock %}
+{% block content %}
+<div class="max-w-2xl">
+  <h1 class="text-2xl font-semibold text-ink-900 tracking-tight mb-1">Configurações</h1>
+  <p class="text-sm text-ink-500 mb-6">Conexão com o Google Drive do cliente.</p>
+
+  <div class="card overflow-hidden">
+    {% if is_connected %}
+    <div class="bg-gradient-to-br from-emerald-50 to-white px-6 py-6 border-b border-emerald-100">
+      <div class="flex items-start gap-4">
+        <span class="inline-flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-emerald-100 text-emerald-700 ring-4 ring-emerald-50">
+          <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5"/></svg>
+        </span>
+        <div class="flex-1 min-w-0">
+          <p class="text-base font-semibold text-ink-900">Google Drive conectado</p>
+          <p class="text-sm text-ink-600 mt-0.5">Conectado como <strong class="font-medium text-ink-900">{{ credential.account_email }}</strong> em {{ credential.connected_at|date:"d/m/Y" }}</p>
+        </div>
+      </div>
+    </div>
+    <div class="px-6 py-5">
+      <p class="text-sm text-ink-600 leading-relaxed">
+        Os arquivos deste sistema são armazenados diretamente no Google Drive configurado pelo cliente.
+        Mesmo que este sistema seja substituído no futuro, os arquivos continuam no Google Drive do cliente.
+      </p>
+      <div class="mt-5 flex items-center gap-3">
+        {% if root_folder_url %}
+        <a href="{{ root_folder_url }}" target="_blank" rel="noopener" class="btn-primary">
+          <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M13.5 6H5.25A2.25 2.25 0 003 8.25v10.5A2.25 2.25 0 005.25 21h10.5A2.25 2.25 0 0018 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25"/></svg>
+          Abrir pasta no Google Drive
+        </a>
+        {% endif %}
+        <form method="post" action="{% url 'google_drive:disconnect' %}">
+          {% csrf_token %}
+          <button type="submit" class="btn-ghost">Desconectar</button>
+        </form>
+      </div>
+    </div>
+    {% else %}
+    <div class="px-6 py-6">
+      <div class="flex items-start gap-4">
+        <span class="inline-flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-ink-100 text-ink-500 ring-4 ring-ink-50">
+          <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"/></svg>
+        </span>
+        <div class="flex-1">
+          <p class="text-base font-semibold text-ink-900">Google Drive desconectado</p>
+          <p class="text-sm text-ink-500 mt-0.5">Conecte a conta Google do cliente para começar a enviar documentos e sincronizar notas.</p>
+          <a href="{% url 'google_drive:connect' %}" class="btn-primary mt-4">
+            <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M13.19 8.688a4.5 4.5 0 011.242 7.244l-4.5 4.5a4.5 4.5 0 01-6.364-6.364l1.757-1.757m13.35-.622l1.757-1.757a4.5 4.5 0 00-6.364-6.364l-4.5 4.5a4.5 4.5 0 001.242 7.244"/></svg>
+            Conectar ao Google Drive
+          </a>
+          {% if not root_folder_configured %}
+          <p class="text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2 mt-4 inline-flex items-center gap-1.5">
+            <svg class="h-3.5 w-3.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z"/></svg>
+            A variável GOOGLE_DRIVE_ROOT_FOLDER_ID ainda não está configurada.
+          </p>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+    {% endif %}
+  </div>
+
+  <div class="mt-6 card p-6">
+    <h2 class="card-title mb-3">Organização automática no Google Drive</h2>
+    <p class="text-sm text-ink-500 mb-4">O sistema organiza automaticamente os arquivos dentro da pasta raiz configurada, sem duplicar pastas:</p>
+    <div class="text-xs bg-ink-50 border border-ink-200 rounded-lg p-4 text-ink-600 font-mono leading-relaxed">
+      <p class="text-ink-900 font-medium">Sistema Escolar</p>
+      <p class="pl-3">├── Alunos</p>
+      <p class="pl-6 text-ink-900">└── {Nome do aluno} - {Matrícula}</p>
+      <p class="pl-9">├── Documentos</p>
+      <p class="pl-9">├── Fotos</p>
+      <p class="pl-9">└── Outros</p>
+      <p class="pl-3">├── Turmas</p>
+      <p class="pl-6 text-ink-900">└── {Nome da turma}</p>
+      <p class="pl-3">└── Relatórios</p>
+    </div>
+  </div>
+</div>
+{% endblock %}
