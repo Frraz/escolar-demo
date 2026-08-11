@@ -5,6 +5,12 @@
     <span>{{ error }}</span>
   </div>
   {% endif %}
+  {% if rows and not subjects %}
+  <div class="mx-5 mt-4 flex items-start gap-2.5 rounded-lg bg-amber-50 border border-amber-200 text-amber-800 text-sm px-4 py-3">
+    <svg class="h-5 w-5 shrink-0 text-amber-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z"/></svg>
+    <span>Nenhuma matéria cadastrada ainda, por isso não há colunas para lançar notas. Cadastre matérias em <a href="/admin/grades/subject/" class="underline font-medium" target="_blank" rel="noopener">Configurações &rsaquo; Matérias</a>.</span>
+  </div>
+  {% endif %}
   {% if rows %}
   <div class="overflow-x-auto">
   <table class="w-full text-sm border-collapse">
