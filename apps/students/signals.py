@@ -25,5 +25,12 @@ def create_drive_folders_for_student(sender, instance, created, **kwargs):
                 "Não foi possível criar a estrutura de pastas do aluno no Google Drive",
                 exc_info=True, extra={"student_id": instance.id},
             )
+        except Exception:
+            # Nunca deixar uma falha inesperada na integração com o Google
+            # derrubar a criação do aluno em si (que já foi salva no banco).
+            logger.exception(
+                "Erro inesperado ao criar a estrutura de pastas do aluno no Google Drive",
+                extra={"student_id": instance.id},
+            )
 
     transaction.on_commit(_create_folders)

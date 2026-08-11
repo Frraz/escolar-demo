@@ -27,3 +27,15 @@ def test_drive_failure_during_class_creation_does_not_raise(mocker, django_captu
         school_class = ClassFactory()
 
     assert school_class.pk is not None
+
+
+def test_unexpected_error_during_class_creation_does_not_raise(mocker, django_capture_on_commit_callbacks):
+    mocker.patch(
+        "apps.classes.signals.FolderStructureService.ensure_class_folder",
+        side_effect=TypeError("can't compare offset-naive and offset-aware datetimes"),
+    )
+
+    with django_capture_on_commit_callbacks(execute=True):
+        school_class = ClassFactory()
+
+    assert school_class.pk is not None

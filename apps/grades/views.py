@@ -121,6 +121,13 @@ class SyncGradeSheetView(LoginRequiredMixin, View):
             )
             messages.error(request, exc.user_message)
             return redirect("grades:class_grades", class_id=school_class.id)
+        except Exception:
+            logger.exception(
+                "Erro inesperado ao sincronizar notas com o Google Sheets",
+                extra={"class_id": school_class.id, "user_id": request.user.id},
+            )
+            messages.error(request, "Não foi possível sincronizar as notas com o Google Sheets. Tente novamente.")
+            return redirect("grades:class_grades", class_id=school_class.id)
 
         messages.success(request, "Notas sincronizadas com o Google Sheets.")
         return redirect("grades:class_grades", class_id=school_class.id)

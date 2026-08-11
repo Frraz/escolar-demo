@@ -1,3 +1,4 @@
+import datetime
 import logging
 
 from django.conf import settings
@@ -14,6 +15,20 @@ logger = logging.getLogger(__name__)
 
 # Margem de segurança para renovar o token antes de ele expirar de fato.
 TOKEN_EXPIRY_MARGIN_SECONDS = 300
+
+
+def _to_naive_utc(aware_dt):
+    """google-auth espera Credentials.expiry como datetime *naive* em UTC —
+    diferente do Django, que usa datetimes *aware* quando USE_TZ=True."""
+    return aware_dt.astimezone(datetime.timezone.utc).replace(tzinfo=None)
+
+
+def _to_aware_utc(naive_dt):
+    """Converte de volta o datetime naive (UTC) do google-auth para um
+    datetime aware, no formato que os campos do Django esperam."""
+    if timezone.is_aware(naive_dt):
+        return naive_dt
+    return naive_dt.replace(tzinfo=datetime.timezone.utc)
 
 
 class GoogleAuthService:
@@ -61,7 +76,7 @@ class GoogleAuthService:
                 "account_email": account_email,
                 "access_token": credentials.token,
                 "refresh_token": credentials.refresh_token,
-                "token_expiry": credentials.expiry or timezone.now(),
+                "token_expiry": _to_aware_utc(credentials.expiry) if credentials.expiry else timezone.now(),
                 "scopes": " ".join(credentials.scopes or []),
                 "connected_by": user,
             },
@@ -90,7 +105,7 @@ class GoogleAuthService:
             client_secret=settings.GOOGLE_CLIENT_SECRET,
             scopes=stored.scopes.split() if stored.scopes else None,
         )
-        credentials.expiry = stored.token_expiry
+        credentials.expiry = _to_naive_utc(stored.token_expiry)
 
         seconds_to_expiry = (stored.token_expiry - timezone.now()).total_seconds()
         if seconds_to_expiry <= TOKEN_EXPIRY_MARGIN_SECONDS:
@@ -100,7 +115,7 @@ class GoogleAuthService:
                 logger.error("Falha ao renovar token do Google Drive", exc_info=True)
                 raise GoogleAuthExpiredError() from exc
             stored.access_token = credentials.token
-            stored.token_expiry = credentials.expiry
+            stored.token_expiry = _to_aware_utc(credentials.expiry)
             stored.save(update_fields=["access_token", "token_expiry", "updated_at"])
 
         return credentials

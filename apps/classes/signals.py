@@ -25,5 +25,12 @@ def create_drive_folder_for_class(sender, instance, created, **kwargs):
                 "Não foi possível criar a pasta da turma no Google Drive",
                 exc_info=True, extra={"class_id": instance.id},
             )
+        except Exception:
+            # Nunca deixar uma falha inesperada na integração com o Google
+            # derrubar a criação da turma em si (que já foi salva no banco).
+            logger.exception(
+                "Erro inesperado ao criar a pasta da turma no Google Drive",
+                extra={"class_id": instance.id},
+            )
 
     transaction.on_commit(_create_folder)

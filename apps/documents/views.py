@@ -67,6 +67,14 @@ class DocumentUploadView(LoginRequiredMixin, View):
             context = _documents_section_context(student)
             context["upload_error"] = exc.user_message
             return render(request, "students/_documents_section.html", context)
+        except Exception:
+            logger.exception(
+                "Erro inesperado ao enviar documento para o Google Drive",
+                extra={"student_id": student.id, "user_id": request.user.id},
+            )
+            context = _documents_section_context(student)
+            context["upload_error"] = "Não foi possível enviar o arquivo. Tente novamente."
+            return render(request, "students/_documents_section.html", context)
 
         try:
             with transaction.atomic():
@@ -89,10 +97,10 @@ class DocumentUploadView(LoginRequiredMixin, View):
             try:
                 GoogleDriveService().delete_file(drive_file["id"])
                 logger.info("Arquivo órfão removido do Drive: %s", drive_file["id"])
-            except GoogleServiceError:
+            except Exception:
                 logger.critical(
                     "ARQUIVO ÓRFÃO NO DRIVE precisa de limpeza manual: file_id=%s, folder_id=%s",
-                    drive_file["id"], target_folder_id,
+                    drive_file["id"], target_folder_id, exc_info=True,
                 )
             context = _documents_section_context(student)
             context["upload_error"] = "Não foi possível concluir o envio. Tente novamente."
@@ -122,6 +130,14 @@ class DocumentDeleteView(LoginRequiredMixin, DeleteView):
             )
             context = _documents_section_context(student)
             context["upload_error"] = exc.user_message
+            return render(request, "students/_documents_section.html", context)
+        except Exception:
+            logger.exception(
+                "Erro inesperado ao excluir documento no Google Drive",
+                extra={"document_id": document.id, "user_id": request.user.id},
+            )
+            context = _documents_section_context(student)
+            context["upload_error"] = "Não foi possível excluir o arquivo. Tente novamente."
             return render(request, "students/_documents_section.html", context)
 
         document.delete()

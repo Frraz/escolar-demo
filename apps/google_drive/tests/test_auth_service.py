@@ -49,12 +49,29 @@ def test_get_authorized_credentials_returns_token_without_refresh_when_valid(moc
     mock_refresh.assert_not_called()
 
 
+def test_get_authorized_credentials_sets_naive_utc_expiry(mocker):
+    # google-auth espera Credentials.expiry como datetime *naive* — Django
+    # guarda datetime *aware* (USE_TZ=True). Regressão: antes da correção,
+    # `credentials.expired` quebrava com
+    # "TypeError: can't compare offset-naive and offset-aware datetimes"
+    # assim que o googleapiclient tentava usar a credencial de verdade.
+    mocker.patch("google.oauth2.credentials.Credentials.refresh")
+    _create_credential(timezone.now() + timedelta(hours=1))
+
+    service = GoogleAuthService()
+    credentials = service.get_authorized_credentials()
+
+    assert credentials.expiry.tzinfo is None
+    assert credentials.expired is False  # não pode levantar TypeError
+
+
 def test_get_authorized_credentials_refreshes_when_close_to_expiry(mocker):
     stored = _create_credential(timezone.now() + timedelta(seconds=30))
 
     def fake_refresh(self, request):
         self.token = "refreshed-access-token"
-        self.expiry = timezone.now() + timedelta(hours=1)
+        # google-auth sempre entrega um datetime *naive* aqui.
+        self.expiry = timezone.now().replace(tzinfo=None) + timedelta(hours=1)
 
     mocker.patch("google.oauth2.credentials.Credentials.refresh", new=fake_refresh)
 
@@ -64,6 +81,7 @@ def test_get_authorized_credentials_refreshes_when_close_to_expiry(mocker):
     assert credentials.token == "refreshed-access-token"
     stored.refresh_from_db()
     assert stored.access_token == "refreshed-access-token"
+    assert timezone.is_aware(stored.token_expiry)
 
 
 def test_get_authorized_credentials_raises_auth_expired_when_refresh_fails(mocker):
@@ -88,7 +106,8 @@ def test_save_credentials_persists_tokens():
     fake_credentials = MagicMock()
     fake_credentials.token = "tok"
     fake_credentials.refresh_token = "refresh"
-    fake_credentials.expiry = timezone.now() + timedelta(hours=1)
+    # naive, como o google-auth realmente entrega ao final do fluxo OAuth.
+    fake_credentials.expiry = (timezone.now() + timedelta(hours=1)).replace(tzinfo=None)
     fake_credentials.scopes = ["https://www.googleapis.com/auth/drive.file"]
     fake_credentials.id_token = {"email": "cliente@escola.com"}
 
@@ -98,3 +117,4 @@ def test_save_credentials_persists_tokens():
     assert stored.account_email == "cliente@escola.com"
     assert stored.access_token == "tok"
     assert GoogleCredential.objects.count() == 1
+    assert timezone.is_aware(stored.token_expiry)

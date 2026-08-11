@@ -66,6 +66,26 @@ def test_upload_fails_when_drive_raises_error_and_creates_no_document(auth_clien
     assert "Não foi possível enviar o arquivo" in response.content.decode()
 
 
+def test_upload_with_unexpected_error_shows_friendly_message_and_creates_no_document(auth_client, mocker):
+    # Regressão: uma exceção que não é GoogleServiceError (ex: o TypeError de
+    # datetime naive/aware que ocorreu em produção) não pode virar um 500 —
+    # tem que cair no mesmo tratamento amigável do upload.
+    student = StudentFactory()
+    mocker.patch(
+        "apps.documents.views.FolderStructureService.ensure_student_folders",
+        side_effect=TypeError("can't compare offset-naive and offset-aware datetimes"),
+    )
+
+    response = auth_client.post(
+        reverse("documents:upload", args=[student.pk]),
+        {"file": _pdf_upload(), "category": "documentos"},
+    )
+
+    assert response.status_code == 200
+    assert not Document.objects.filter(student=student).exists()
+    assert "Não foi possível enviar o arquivo" in response.content.decode()
+
+
 def test_upload_with_invalid_extension_shows_form_error_without_calling_drive(auth_client, mocker):
     student = StudentFactory()
     mock_upload = mocker.patch("apps.documents.views.GoogleDriveService.upload_file")
