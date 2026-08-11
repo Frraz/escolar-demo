@@ -13,6 +13,11 @@ def test_create_spreadsheet_returns_id_and_url(sheets_service):
     assert result["spreadsheetId"] == "sheet-1"
     client.spreadsheets.return_value.create.assert_called_once()
 
+    # Regressão: a API do Sheets (diferente da API do Drive) rejeita espaço
+    # após a vírgula no parâmetro "fields" com HTTP 400 "invalid argument".
+    _, kwargs = client.spreadsheets.return_value.create.call_args
+    assert " " not in kwargs["fields"]
+
 
 def test_update_values_sends_matrix_to_sheets_api(sheets_service):
     service, client = sheets_service

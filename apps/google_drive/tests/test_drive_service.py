@@ -122,5 +122,5 @@ def test_move_file_uses_current_parents_when_not_provided(drive_service):
     result = service.move_file("file-1", new_parent_id="new-parent")
     assert result["parents"] == ["new-parent"]
     client.files.return_value.update.assert_called_once_with(
-        fileId="file-1", addParents="new-parent", removeParents="old-parent", fields="id, parents"
+        fileId="file-1", addParents="new-parent", removeParents="old-parent", fields="id,parents"
     )

@@ -70,7 +70,7 @@ class GoogleDriveService:
                 f"name = '{escaped_name}' and '{parent_id}' in parents "
                 f"and mimeType = '{FOLDER_MIME_TYPE}' and trashed = false"
             )
-            response = self.client.files().list(q=query, fields="files(id, name)", pageSize=1).execute()
+            response = self.client.files().list(q=query, fields="files(id,name)", pageSize=1).execute()
             files = response.get("files", [])
             return files[0]["id"] if files else None
 
@@ -86,7 +86,7 @@ class GoogleDriveService:
             media = MediaIoBaseUpload(file_obj, mimetype=mime_type, resumable=False)
             created = (
                 self.client.files()
-                .create(body=metadata, media_body=media, fields="id, name, webViewLink, mimeType, size")
+                .create(body=metadata, media_body=media, fields="id,name,webViewLink,mimeType,size")
                 .execute()
             )
             return created
@@ -112,7 +112,7 @@ class GoogleDriveService:
                 old_parent_id = ",".join(current.get("parents", []))
             return (
                 self.client.files()
-                .update(fileId=file_id, addParents=new_parent_id, removeParents=old_parent_id, fields="id, parents")
+                .update(fileId=file_id, addParents=new_parent_id, removeParents=old_parent_id, fields="id,parents")
                 .execute()
             )
 
@@ -121,7 +121,7 @@ class GoogleDriveService:
             query = f"'{parent_id}' in parents and trashed = false"
             response = (
                 self.client.files()
-                .list(q=query, fields="files(id, name, mimeType, size, webViewLink)")
+                .list(q=query, fields="files(id,name,mimeType,size,webViewLink)")
                 .execute()
             )
             return response.get("files", [])
@@ -130,7 +130,7 @@ class GoogleDriveService:
         with translate_google_errors():
             return (
                 self.client.files()
-                .get(fileId=file_id, fields="id, name, mimeType, size, webViewLink, parents")
+                .get(fileId=file_id, fields="id,name,mimeType,size,webViewLink,parents")
                 .execute()
             )
 

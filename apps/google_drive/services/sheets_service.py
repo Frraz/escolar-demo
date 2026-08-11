@@ -26,7 +26,7 @@ class GoogleSheetsService:
         with translate_google_errors():
             spreadsheet = (
                 self.client.spreadsheets()
-                .create(body={"properties": {"title": title}}, fields="spreadsheetId, spreadsheetUrl")
+                .create(body={"properties": {"title": title}}, fields="spreadsheetId,spreadsheetUrl")
                 .execute()
             )
             return spreadsheet
